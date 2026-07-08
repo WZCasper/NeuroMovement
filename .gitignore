@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Виртуальные окружения
+.venv/
+venv/
+env/
+
+# Сборка PyInstaller
+build/
+dist/
+
+# Пользовательские настройки приложения (генерируются при первом запуске)
+neuromovement_settings.json
+
+# Файл весов модели — бинарный, скачивается через scripts/fetch_weights.py
+# (см. weights/README.md), не хранится в git
+weights/*.pt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Ultralytics runs (создаются при обучении/валидации, не используются приложением)
+runs/
+
+# ОС
+.DS_Store
+Thumbs.db
