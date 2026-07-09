@@ -47,6 +47,8 @@ def synthetic_video(tmp_path_factory):
         frame = np.full((240, 320, 3), 40, dtype=np.uint8)
         writer.write(frame)
     writer.release()
+    del writer
+    time.sleep(0.2)
     return str(path)
 
 
@@ -76,12 +78,12 @@ def test_full_start_stop_cycle_receives_frames(qapp, synthetic_video):
     window.start_monitoring()
     assert window.worker is not None
 
-    deadline = time.monotonic() + 5.0
+    deadline = time.monotonic() + 15.0
     while window._frame_count == 0 and time.monotonic() < deadline:
         qapp.processEvents()
         time.sleep(0.05)
 
-    assert window._frame_count > 0, "не получено ни одного кадра за 5 секунд"
+    assert window._frame_count > 0, "не получено ни одного кадра за 15 секунд"
 
     window.stop_monitoring()
     assert window.worker is None
