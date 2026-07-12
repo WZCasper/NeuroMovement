@@ -20,11 +20,10 @@ jobs:
       - name: Show free disk space (before)
         run: Get-PSDrive C | Select-Object Used,Free
 
-      - name: Install runtime + build dependencies
+      - name: Install runtime + dev dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-cache-dir -r requirements.txt
-          pip install --no-cache-dir pyinstaller
+          pip install --no-cache-dir -r requirements-dev.txt
 
       - name: Clear pip cache to free disk space before bundling
         run: pip cache purge
@@ -41,9 +40,14 @@ jobs:
 
       - name: Run test suite
         run: |
-          pip install --no-cache-dir pytest
           $env:QT_QPA_PLATFORM = "offscreen"
-          pytest tests/ -v
+          pytest tests/ -v --tb=short 2>&1 | Tee-Object -FilePath pytest_output.txt
+          $exitCode = $LASTEXITCODE
+          if ($exitCode -ne 0) {
+            $tail = (Get-Content pytest_output.txt -Tail 120) -join "%0A"
+            Write-Host "::error::PYTEST FAILED - TAIL OUTPUT:%0A$tail"
+            exit $exitCode
+          }
 
       - name: Show free disk space (after installs)
         run: Get-PSDrive C | Select-Object Used,Free
