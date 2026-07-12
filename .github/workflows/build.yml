@@ -2,7 +2,7 @@ name: Build Windows Release
 
 on:
   release:
-    types: [created, published]
+    types: [published]
   push:
     tags:
       - "v*"
