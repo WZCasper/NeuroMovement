@@ -1,0 +1,8 @@
+[tool.pytest.ini_options]
+# Гарантирует, что корень репозитория (где лежит пакет neuromovement/)
+# добавляется в sys.path независимо от того, как запущен pytest —
+# `pytest tests/`, `python -m pytest tests/` или из IDE. Без этого
+# `pytest tests/` (без `-m`) не находит пакет neuromovement на некоторых
+# платформах/конфигурациях.
+pythonpath = ["."]
+testpaths = ["tests"]

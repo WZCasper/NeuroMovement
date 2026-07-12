@@ -27,9 +27,12 @@ def synthetic_video(tmp_path_factory):
 
 
 def test_rtsp_source_reads_all_frames(synthetic_video):
-    source = RTSPSource(synthetic_video, reconnect_delay=0.05)
+    # max_consecutive_failures специально завышен: этот тест проверяет
+    # чтение реальных кадров конечного файла, а не логику переподключения
+    # (переподключение для живого RTSP-потока — отдельная задача, ниже).
+    source = RTSPSource(synthetic_video, reconnect_delay=0.05, max_consecutive_failures=10_000)
     frames_read = 0
-    for _ in range(90):
+    for _ in range(45):
         ok, frame = source.read()
         if ok:
             frames_read += 1
@@ -39,6 +42,27 @@ def test_rtsp_source_reads_all_frames(synthetic_video):
     # FFmpeg на Windows могут на 1-2 кадра отличаться от заданных 30)
     # — поэтому проверяем диапазон, а не точное равенство.
     assert 27 <= frames_read <= 30
+
+
+def test_rtsp_source_reconnects_after_repeated_failures(synthetic_video):
+    # А здесь наоборот: специально проверяем, что после исчерпания файла
+    # (много неудачных чтений подряд) источник пытается переоткрыться —
+    # именно так ведёт себя переподключение к реальной RTSP-камере после
+    # обрыва связи.
+    source = RTSPSource(synthetic_video, reconnect_delay=0.01, max_consecutive_failures=5)
+    for _ in range(30):
+        source.read()  # вычитываем все настоящие кадры файла
+    # теперь несколько чтений подряд должны провалиться (конец файла)
+    # и в итоге вызвать переоткрытие источника
+    reopened = False
+    for _ in range(20):
+        ok, _frame = source.read()
+        time.sleep(0.02)
+        if ok:
+            reopened = True
+            break
+    source.release()
+    assert reopened, "источник должен переоткрыться и снова начать отдавать кадры"
 
 
 def test_rtsp_source_invalid_url_reports_unavailable():

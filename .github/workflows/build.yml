@@ -44,7 +44,7 @@ jobs:
       - name: Run test suite
         run: |
           $env:QT_QPA_PLATFORM = "offscreen"
-          pytest tests/ -v --tb=short 2>&1 | Tee-Object -FilePath pytest_output.txt
+          python -m pytest tests/ -v --tb=short 2>&1 | Tee-Object -FilePath pytest_output.txt
           $exitCode = $LASTEXITCODE
           if ($exitCode -ne 0) {
             $tail = (Get-Content pytest_output.txt -Tail 120) -join "%0A"
