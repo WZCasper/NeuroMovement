@@ -58,6 +58,16 @@ jobs:
       - name: Build with PyInstaller
         run: pyinstaller neuromovement.spec --noconfirm
 
+      - name: Verify weights are actually bundled correctly (regression check)
+        run: |
+          $bundled = "dist/NeuroMovement/_internal/weights/yolov8n-seg.pt"
+          if (!(Test-Path $bundled)) {
+            Write-Host "::error::Файл весов не найден в собранном бандле по пути $bundled — приложение не запустится у пользователя. Проверьте datas в neuromovement.spec и get_resource_dir() в config.py."
+            Get-ChildItem -Recurse "dist/NeuroMovement" -Filter "*.pt" | ForEach-Object { Write-Host "Найден .pt файл в:" $_.FullName }
+            exit 1
+          }
+          Write-Host "OK: веса корректно упакованы в $bundled"
+
       - name: Package portable build
         run: Compress-Archive -Path "dist/NeuroMovement/*" -DestinationPath "NeuroMovement-Windows.zip"
 
