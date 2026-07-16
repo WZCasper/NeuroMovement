@@ -27,9 +27,20 @@ COCO_PERSON_CLASS_ID = 0
 
 
 def get_app_dir() -> Path:
-    """Каталог приложения: рядом с .exe при сборке PyInstaller, иначе — корень репозитория."""
+    """Записываемый каталог рядом с .exe — используется для файла настроек,
+    который должен переживать обновления и оставаться доступным на запись."""
     if getattr(sys, "frozen", False):
         return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent
+
+
+def get_resource_dir() -> Path:
+    """Каталог, куда PyInstaller реально помещает файлы из datas.
+    В onedir-сборках PyInstaller 6+ это ПОДПАПКА _internal/ рядом с .exe,
+    а не сам каталог с .exe (частая ошибка) — sys._MEIPASS указывает на
+    неё корректно в обоих режимах (onedir и onefile)."""
+    if getattr(sys, "frozen", False):
+        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
     return Path(__file__).resolve().parent.parent
 
 
@@ -38,7 +49,7 @@ def get_settings_path() -> Path:
 
 
 def get_weights_path() -> Path:
-    return get_app_dir() / "weights" / "yolov8n-seg.pt"
+    return get_resource_dir() / "weights" / "yolov8n-seg.pt"
 
 
 @dataclass
